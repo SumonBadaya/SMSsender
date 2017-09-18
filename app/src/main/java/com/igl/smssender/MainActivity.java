@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URL;
+import java.util.Stack;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -31,13 +32,14 @@ public class MainActivity extends AppCompatActivity {
     ImageButton chooseButton;
     Button sendButton,clearButton;
 
-    public static final int PICK_FILE_RESULT_CODE=911;
+    private static final int PICK_FILE_RESULT_CODE=911;
+
+    public static Stack<String> contacts;
 
 
 
 
     private String separator = ";";
-    String contactsBundle ="";
 
     Intent intentChoos;
 
@@ -50,7 +52,11 @@ public class MainActivity extends AppCompatActivity {
 
         xmlComponentInitialization();
 
-        checkManufacture();
+        //checkManufacture();
+
+        contacts=new Stack<>(); // initialize contacts stack object
+
+        clearAllInput();  // clear  message box and file path view
 
 
         clearButton.setVisibility(View.GONE);
@@ -73,7 +79,9 @@ public class MainActivity extends AppCompatActivity {
 
                 Intent intentNext=new Intent(MainActivity.this,MessageSender.class);
                 intentNext.putExtra("MESSAGE", getMessage());
-                intentNext.putExtra("CONTACT_LIST", contactsBundle);
+                //intentNext.putExtra("CONTACT_LIST", contactsBundle);
+
+                clearAllInput();
                 startActivity(intentNext);
 
             }
@@ -152,10 +160,10 @@ public class MainActivity extends AppCompatActivity {
             br = new BufferedReader(new InputStreamReader(getContentResolver().openInputStream(filePath)));
 
             while ((line = br.readLine()) != null) {
-                contactsBundle += (line+separator);
+                contacts.push(line.trim());
             }
             br.close();
-            contactsBundle = contactsBundle.substring(0, contactsBundle.length()-1);
+            //contactsBundle = contactsBundle.substring(0, contactsBundle.length()-1);
 
             //Log.e("LAST ", contactsBundle);
         }catch (Exception e){
@@ -179,7 +187,21 @@ public class MainActivity extends AppCompatActivity {
     private String getMessage(){
         return message.getText().toString();
     }
+    private void clearAllInput(){
+        message.setText("");
+        fileNameView.setText("Browse Your Contacts List . . .");
+        clearButton.setVisibility(View.GONE);
+    }
 
+    public static Stack<String> getContacts(){
+        return MainActivity.contacts;
+    }
+    public static void clearContacts(){
+        MainActivity.contacts=new Stack<>();
+    }
+
+
+    //not used
 
     private void checkManufacture() {
         if(android.os.Build.MANUFACTURER.equalsIgnoreCase("samsung")){
@@ -187,8 +209,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
-    //not used
 
     private String getFileName(URI u) {
 

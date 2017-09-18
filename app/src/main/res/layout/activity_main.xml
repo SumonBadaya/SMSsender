@@ -24,6 +24,7 @@
                 />
 
             <LinearLayout
+                android:id="@+id/linearLayOut"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
@@ -63,6 +64,8 @@
                     android:layout_height="wrap_content"
                     android:inputType="textMultiLine"
                     android:lines="6"
+                    android:maxLength="150"
+                    android:scrollbars="vertical"
                     android:paddingLeft="@dimen/paddingLeftRightTop"
                     android:paddingRight="@dimen/paddingLeftRightTop"
                     android:paddingTop="@dimen/paddingLeftRightTop"

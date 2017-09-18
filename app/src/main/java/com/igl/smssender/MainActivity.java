@@ -14,6 +14,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,6 +32,8 @@ public class MainActivity extends AppCompatActivity {
 
     ImageButton chooseButton;
     Button sendButton,clearButton;
+
+    LinearLayout linearLayout;
 
     private static final int PICK_FILE_RESULT_CODE=911;
 
@@ -66,6 +69,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
+                intentChoos = new Intent(Intent.ACTION_GET_CONTENT);
+                intentChoos.setType("text/plain");
+
+                startActivityForResult(intentChoos, PICK_FILE_RESULT_CODE);
+            }
+        });
+        linearLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
                 intentChoos = new Intent(Intent.ACTION_GET_CONTENT);
                 intentChoos.setType("text/plain");
 
@@ -178,6 +190,7 @@ public class MainActivity extends AppCompatActivity {
         chooseButton=(ImageButton)findViewById(R.id.contactButton);
         sendButton= (Button) findViewById(R.id.sendButton);
         clearButton= (Button) findViewById(R.id.clearButton);
+        linearLayout=(LinearLayout)findViewById(R.id.linearLayOut);
     }
 
     public void clear(View v){

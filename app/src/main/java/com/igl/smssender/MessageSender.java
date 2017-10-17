@@ -4,89 +4,160 @@ import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.SmsManager;
-import android.util.Log;
-import android.view.View;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.Stack;
 
-import static android.R.attr.phoneNumber;
-
 public class MessageSender extends AppCompatActivity {
+
+    TextView maxNumber, showProgress;
+    ProgressBar progressBar;
 
     String message;
     Stack<String> contacts;
 
-
     String SENT = "SMS_SENT";
-    String DELIVERED = "SMS_DELIVERED";
 
-    PendingIntent pendingIntent;
-    PendingIntent deliveredPI;
+    int contactsLength;
 
-    SentReceiver sentReceiver;
-    DeliverReceiver deliverReceiver;
+    BroadcastReceiver sentReceiver;
+
+    final Handler handler = new Handler();
+    WarningMessage dialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_message_sender);
 
-        // TODO: 9/17/2017  catch the Contacts file -> collect -> all contacts -> perepare for message String -> make messageSender object -> send the messsage of all contackts list- > show progress bar -> instyead of the preogress of sending message
+        initializationAllXMLCompononet();
 
         message = getIntent().getExtras().getString("MESSAGE");
 
-        contacts=MainActivity.contacts;
+        contacts = MainActivity.contacts;
         MainActivity.clearContacts();
 
-        pendingIntent = PendingIntent.getBroadcast(this, 0, new Intent(this, MessageSender.class), 0);
-        deliveredPI = PendingIntent.getBroadcast(this, 0, new Intent(DELIVERED), 0);
+        contactsLength = contacts.size();
+        maxNumber.setText(" / " + contactsLength);
 
-        sentReceiver =new SentReceiver();
-        deliverReceiver=new DeliverReceiver();
+        progressBar.setMax(contactsLength);
+
+        buildDialog();
+
+
+        final PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, new Intent(SENT), 0);
+
+        sentReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+
+                switch (getResultCode()) {
+                    case Activity.RESULT_OK:
+                        //increaseProgress();
+                        break;
+                    case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
+                        increaseProgress();
+                        //Toast.makeText(context, "Generic failure", Toast.LENGTH_SHORT).show();
+                        break;
+                    case SmsManager.RESULT_ERROR_NO_SERVICE:
+                        Toast.makeText(context, "No service", Toast.LENGTH_SHORT).show();
+                        break;
+                    case SmsManager.RESULT_ERROR_NULL_PDU:
+                        Toast.makeText(context, "Null PDU", Toast.LENGTH_SHORT).show();
+                        break;
+                    case SmsManager.RESULT_ERROR_RADIO_OFF:
+                        Toast.makeText(context, "Radio off", Toast.LENGTH_SHORT).show();
+                        break;
+                }
+            }
+        };
 
 
         //---when the SMS has been sent---
-        registerReceiver( sentReceiver, new IntentFilter(SENT));
-        //---when the SMS has been delivered---
-        //registerReceiver(deliverReceiver, new IntentFilter(DELIVERED));
+        registerReceiver(sentReceiver, new IntentFilter(SENT));
 
-        SmsManager sms = SmsManager.getDefault();
+        final SmsManager sms = SmsManager.getDefault();
+        //sms.sendTextMessage("01632594151",null,message,pendingIntent,null);
 
-        while (!contacts.isEmpty()){
-            Log.e("sent:: ",contacts.peek());
-            contacts.pop();
-        }
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (!contacts.isEmpty()) {
+
+                    SystemClock.sleep(10);
+                    sms.sendTextMessage(contacts.peek(), null, message, pendingIntent, null);
+                    contacts.pop();
+                }
+            }
+        }).start();
+
     }
+
 
     @Override
     protected void onResume() {
         //---when the SMS has been sent---
-        registerReceiver( sentReceiver, new IntentFilter(SENT));
+        registerReceiver(sentReceiver, new IntentFilter(SENT));
 
-        //---when the SMS has been delivered---
-      //  registerReceiver(deliverReceiver, new IntentFilter(DELIVERED));
         super.onResume();
     }
 
     @Override
     public void onDestroy() {
         unregisterReceiver(sentReceiver);
-        //unregisterReceiver(deliverReceiver);
+
         super.onDestroy();
     }
 
-//    @Override
-//    protected void onPause() {
-//        unregisterReceiver(sentReceiver);
-//        //unregisterReceiver(deliverReceiver);
-//        super.onPause();
-//    }
+    /////////////////////////////////////////////////////////////////////////////////////////
+
+    private void initializationAllXMLCompononet() {
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        maxNumber = (TextView) findViewById(R.id.maxNumber);
+        showProgress = (TextView) findViewById(R.id.showProgress);
+    }
+
+    private void buildDialog() {
+        dialog = new WarningMessage(this, "ALL SMS ARE", "Successfully Sent");
+        dialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                finish();
+            }
+        });
+    }
+
+
+    public void sentProgress() {
+        progressBar.setProgress(progressBar.getProgress() + 1);
+        showProgress.setText(String.valueOf(progressBar.getProgress()));
+    }
+
+    public void increaseProgress() {
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                sentProgress();
+                isDone();
+            }
+        });
+    }
+
+    public void isDone() {
+        if (progressBar.getProgress() == contactsLength) {
+            dialog.display();
+        }
+    }
 }
 

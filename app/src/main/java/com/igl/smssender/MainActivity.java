@@ -1,11 +1,8 @@
 package com.igl.smssender;
 
-import android.Manifest;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -89,12 +86,21 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                Intent intentNext=new Intent(MainActivity.this,MessageSender.class);
-                intentNext.putExtra("MESSAGE", getMessage());
-                //intentNext.putExtra("CONTACT_LIST", contactsBundle);
+                if (fileNameView.getText().toString().equals("Browse Your Contacts List . . .") == false) {
 
-                clearAllInput();
-                startActivity(intentNext);
+                    if (getMessage().isEmpty() == false) {
+                        Intent intentNext = new Intent(MainActivity.this, MessageSender.class);
+                        intentNext.putExtra("MESSAGE", getMessage());
+                        //intentNext.putExtra("CONTACT_LIST", contactsBundle);
+
+                        clearAllInput();
+                        startActivity(intentNext);
+                    } else {
+                        Toast.makeText(MainActivity.this, "Message Box is Empty !", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Toast.makeText(MainActivity.this, "Contacts not Found !", Toast.LENGTH_SHORT).show();
+                }
 
             }
         });
@@ -124,22 +130,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode,String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case 1: {
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                    if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.SEND_SMS) == PackageManager.PERMISSION_GRANTED) {
-                        Toast.makeText(getApplicationContext(), "Permission Granted", Toast.LENGTH_LONG).show();
-                    }
-                } else {
-                    Toast.makeText(getApplicationContext(), "Not Granted", Toast.LENGTH_LONG).show();
-                }
-            }
-        }
-    }
+//
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode,String permissions[], int[] grantResults) {
+//        switch (requestCode) {
+//            case 1: {
+//                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//
+//                    if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.SEND_SMS) == PackageManager.PERMISSION_GRANTED) {
+//                        Toast.makeText(getApplicationContext(), "Permission Granted", Toast.LENGTH_LONG).show();
+//                    }
+//                } else {
+//                    Toast.makeText(getApplicationContext(), "Not Granted", Toast.LENGTH_LONG).show();
+//                }
+//            }
+//        }
+//    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -158,9 +164,9 @@ public class MainActivity extends AppCompatActivity {
 
                 Log.e("filePath","not found");
 
-                Toast.makeText(this, "Select Contacts List!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "PLease, Select Contacts List!", Toast.LENGTH_SHORT).show();
 
-                startActivityForResult(intentChoos, PICK_FILE_RESULT_CODE);
+                //u startActivityForResult(intentChoos, PICK_FILE_RESULT_CODE);
             }
         }
     }
@@ -234,5 +240,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+    ////////////////////////////////////////////////////////////////////////////////
+
 
 }

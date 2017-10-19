@@ -1,10 +1,10 @@
 <resources>
-    <string name="app_name">SMSsender</string>
+    <string name="app_name">SMS Sender</string>
 
     <!-- Main Activity-->
     <string name="contactsListSelectionMessage">Browse Your Contacts List . . .</string>
     <string name="messageBoxHelpMessage">Write Your Message . . .</string>
-    <string name="characterLimitOfMessageBox"> / 150</string>
+    <string name="characterLimitOfMessageBox"> / 160</string>
     <string name="sendButtonMessage">Send Message</string>
 
     <!-- MessageSender Activity-->
